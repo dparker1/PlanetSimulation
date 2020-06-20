@@ -8,8 +8,13 @@
 #include "GL/freeglut.h"
 #include "PlanetSystem.h"
 
+#define PI 3.1415926535897932384626433832795
+#define TWOPI 6.283185307179586476925286766559
+#define CIRCLE_VERTICES 40
+#define BASE_CIRCLE_RADIUS 0.001
+
 int window;
-int windowWidth = 1600, windowHeight = 900;
+int windowWidth = 900, windowHeight = 900;
 double halfWidth = windowWidth / 2.0, halfHeight = windowHeight / 2.0;
 bool leftClick, rightClick;
 double trueX, trueY, trueXEnd, trueYEnd;
@@ -18,25 +23,32 @@ std::chrono::steady_clock::time_point oldTime, newTime;
 
 PlanetSystem s;
 
+void drawPlanet(Planet* p)
+{
+	glBegin(GL_TRIANGLE_FAN);
+	glVertex2d(p->position.x, p->position.y);
+	double radius = BASE_CIRCLE_RADIUS * p->size;
+	for (int i = 0; i <= CIRCLE_VERTICES; i++)
+	{
+		glVertex2d(radius * cos(i * TWOPI / CIRCLE_VERTICES) + p->position.x,
+			radius * sin(i * TWOPI / CIRCLE_VERTICES) + p->position.y);
+	}
+	glEnd();
+}
+
 void drawPlanets()
 {
 	glColor3d(1, 1, 1);
 	for (std::vector<Planet>::iterator it = s.planets.begin(); it != s.planets.end(); ++it)
 	{
-		glPointSize(it->size);
-		glBegin(GL_POINTS);
-		glVertex2d(it->position.x, it->position.y);
-		glEnd();
+		drawPlanet(&(*it));
 	}
 }
 
 void drawGhost()
 {
 	glColor4d(1, 1, 1, 0.5);
-	glPointSize(newPlanet.size);
-	glBegin(GL_POINTS);
-	glVertex2d(trueX, trueY);
-	glEnd();
+	drawPlanet(&newPlanet);
 }
 
 void drawArrow()
@@ -89,8 +101,6 @@ void mouseCallback(int button, int state, int x, int y)
 	if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
 	{
 		leftClick = true;
-		newPlanet.position.x = (x / halfWidth) - 1;
-		newPlanet.position.y = 1 - (y / halfHeight);
 	}
 
 	if (button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN)
@@ -103,14 +113,16 @@ void mouseCallback(int button, int state, int x, int y)
 		newPlanet.velocity.x = (trueXEnd - trueX) / 50;
 		newPlanet.velocity.y = (trueYEnd - trueY) / 50;
 		s.addPlanet(newPlanet);
-		std::cout << newPlanet.size << ": " << newPlanet.mass << std::endl;
+		std::cout << "Size: " << newPlanet.size << ", Mass: " << newPlanet.mass << std::endl;
 	}
 }
 
 void passiveMouseCallback(int x, int y)
 {
-	trueX = (x / halfWidth) - 1;
-	trueY = 1 - (y / halfHeight);
+	newPlanet.position.x = (x / halfWidth) - 1;
+	newPlanet.position.y = 1 - (y / halfHeight);
+	trueX = newPlanet.position.x;
+	trueY = newPlanet.position.y;
 	trueXEnd = trueX;
 	trueYEnd = trueY;
 }
@@ -126,12 +138,12 @@ void mouseWheelCallback(int button, int dir, int x, int y)
 	if (dir > 0)
 	{
 		newPlanet.size++;
-		newPlanet.mass++;
+		newPlanet.mass = pow(newPlanet.size, 3) / 100;
 	}
 	else
 	{
 		newPlanet.size--;
-		newPlanet.mass--;
+		newPlanet.mass = pow(newPlanet.size, 3) / 100;
 	}
 }
 
@@ -153,7 +165,7 @@ int main(int argc, char** argv)
 	window = glutCreateWindow("Planet Simulation");
 	s = PlanetSystem();
 	s.addPlanet(10, 10, { 0.15, 0 }, { 0, 0.00025 });
-	s.addPlanet(20, 20, { 0, 0 }, true);
+	s.addPlanet(20, 80, { 0, 0 }, true);
 
 	glutMouseFunc(mouseCallback);
 	glutMotionFunc(activeMouseCallback);
