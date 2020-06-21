@@ -8,6 +8,12 @@ struct Vec2 {
     double y{ 0 };
 };
 
+struct IntDouble
+{
+    int i{ 0 };
+    double d{ 0 };
+};
+
 struct Planet {
     int size{ 10 };
     double mass{ 10 };
@@ -28,6 +34,8 @@ public:
     void addPlanet(int size, double mass, Vec2 position, Vec2 velocity, bool fixed);
     void addPlanet(int size, double mass, Vec2 position, bool fixed);
     void addPlanet(int size, double mass, Vec2 position, Vec2 velocity);
+    void removePlanet(int planetIndex);
+    IntDouble closestPlanet(Vec2 pos);
     void calculate(double step);
     int nPlanets();
 

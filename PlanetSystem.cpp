@@ -7,6 +7,11 @@ double distance(Vec2 p1, Vec2 p2)
 	return sqrt(pow(p1.x - p2.x, 2) + pow(p1.y - p2.y, 2));
 }
 
+double distance2(Vec2 p1, Vec2 p2)
+{
+	return pow(p1.x - p2.x, 2) + pow(p1.y - p2.y, 2);
+}
+
 PlanetSystem::PlanetSystem()
 {
 	this->n = 0;
@@ -50,12 +55,39 @@ void PlanetSystem::addPlanet(int size, double mass, Vec2 position, Vec2 velocity
 	addPlanet(size, mass, position, velocity, { 0, 0 }, false);
 }
 
+void PlanetSystem::removePlanet(int planetIndex)
+{
+	this->planets.erase(this->planets.begin() + planetIndex);
+	this->n--;
+}
+
+IntDouble PlanetSystem::closestPlanet(Vec2 pos)
+{
+	double min = DBL_MAX, dist;
+	int minI = -1;
+	for (int i = 0; i < this->n; i++)
+	{
+		Planet p = this->planets[i];
+		dist = distance2(pos, p.position);
+		if (dist < min)
+		{
+			min = dist;
+			minI = i;
+		}
+	}
+	return { minI, min };
+}
+
 void PlanetSystem::calculate(double step)
 {
 	double d, inter;
 	for (int i = 0; i < this->n; i++)
 	{
 		Planet* p = &(this->planets[i]);
+		if (p->fixed)
+		{
+			continue;
+		}
 		p->position.x += step * p->velocity.x;
 		p->position.y += step * p->velocity.y;
 		p->velocity.x += step * p->force.x;
@@ -64,7 +96,7 @@ void PlanetSystem::calculate(double step)
 		p->force.y = 0;
 		for (int j = 0; j < this->n; j++)
 		{
-			if (j == i || p->fixed)
+			if (j == i)
 			{
 				continue;
 			}

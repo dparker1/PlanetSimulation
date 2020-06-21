@@ -53,12 +53,15 @@ void drawGhost()
 
 void drawArrow()
 {
-	glColor3d(1, 0, 0);
-	glLineWidth(2);
-	glBegin(GL_LINES);
-	glVertex2d(trueX, trueY);
-	glVertex2d(trueXEnd, trueYEnd);
-	glEnd();
+	if (leftClick)
+	{
+		glColor3d(1, 0, 0);
+		glLineWidth(2);
+		glBegin(GL_LINES);
+		glVertex2d(trueX, trueY);
+		glVertex2d(trueXEnd, trueYEnd);
+		glEnd();
+	}
 }
 
 void render()
@@ -110,10 +113,22 @@ void mouseCallback(int button, int state, int x, int y)
 
 	if (leftClick && state == GLUT_UP)
 	{
+		leftClick = false;
 		newPlanet.velocity.x = (trueXEnd - trueX) / 50;
 		newPlanet.velocity.y = (trueYEnd - trueY) / 50;
 		s.addPlanet(newPlanet);
 		std::cout << "Size: " << newPlanet.size << ", Mass: " << newPlanet.mass << std::endl;
+	}
+
+	if (rightClick && state == GLUT_UP)
+	{
+		rightClick = false;
+		IntDouble iDist = s.closestPlanet({ trueX, trueY });
+		
+		if (iDist.i != -1 && iDist.d < 2 * pow(s.planets[iDist.i].size * BASE_CIRCLE_RADIUS, 2))
+		{
+			s.removePlanet(iDist.i);
+		}
 	}
 }
 
@@ -149,7 +164,12 @@ void mouseWheelCallback(int button, int dir, int x, int y)
 
 void keyboardCallback(unsigned char key, int x, int y)
 {
-	if (key == 27)
+	if (key == 'f')
+	{
+		newPlanet.fixed = !newPlanet.fixed;
+	}
+
+	if (key == 27) // esc
 	{
 		exit(EXIT_SUCCESS);
 	}
@@ -167,6 +187,7 @@ int main(int argc, char** argv)
 	s.addPlanet(10, 10, { 0.15, 0 }, { 0, 0.00025 });
 	s.addPlanet(20, 80, { 0, 0 }, true);
 
+	glutKeyboardFunc(keyboardCallback);
 	glutMouseFunc(mouseCallback);
 	glutMotionFunc(activeMouseCallback);
 	glutPassiveMotionFunc(passiveMouseCallback);
