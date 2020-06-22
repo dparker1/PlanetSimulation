@@ -14,6 +14,7 @@
 #define BASE_CIRCLE_RADIUS 0.001
 
 int window;
+double frames;
 int windowWidth = 900, windowHeight = 900;
 double halfWidth = windowWidth / 2.0, halfHeight = windowHeight / 2.0;
 bool leftClick, rightClick;
@@ -80,12 +81,17 @@ void render()
 	long long diff = std::chrono::duration_cast<std::chrono::microseconds>(newTime - oldTime).count();
 	if (diff > 0)
 	{
+		frames++;
 		oldTime = newTime;
 		double step = 1.0 / (diff) * 1000;
+		if (frames > 1000)
+		{
+			s.cullPlanets();
+			frames = 0;
+		}
 		s.calculate(step);
 	}
 	oldTime = newTime;
-
 	glFlush();
 	glutSwapBuffers();
 }
@@ -177,6 +183,7 @@ void keyboardCallback(unsigned char key, int x, int y)
 
 int main(int argc, char** argv)
 {
+	frames = 0;
 	oldTime = std::chrono::steady_clock::now();
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGBA);

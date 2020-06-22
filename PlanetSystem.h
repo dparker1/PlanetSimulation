@@ -35,6 +35,7 @@ public:
     void addPlanet(int size, double mass, Vec2 position, bool fixed);
     void addPlanet(int size, double mass, Vec2 position, Vec2 velocity);
     void removePlanet(int planetIndex);
+    void cullPlanets();
     IntDouble closestPlanet(Vec2 pos);
     void calculate(double step);
     int nPlanets();

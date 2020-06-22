@@ -12,6 +12,15 @@ double distance2(Vec2 p1, Vec2 p2)
 	return pow(p1.x - p2.x, 2) + pow(p1.y - p2.y, 2);
 }
 
+bool isOutside(Planet p)
+{
+	if (p.position.x > 10 || p.position.x < -10 || p.position.y > 10 || p.position.y < -10)
+	{
+		return true;
+	}
+	return false;
+}
+
 PlanetSystem::PlanetSystem()
 {
 	this->n = 0;
@@ -59,6 +68,13 @@ void PlanetSystem::removePlanet(int planetIndex)
 {
 	this->planets.erase(this->planets.begin() + planetIndex);
 	this->n--;
+}
+
+void PlanetSystem::cullPlanets()
+{
+	std::vector<Planet>::iterator it = std::remove_if(this->planets.begin(), this->planets.end(), isOutside);
+	n -= std::distance(it, this->planets.end());
+	this->planets.erase(it, this->planets.end());
 }
 
 IntDouble PlanetSystem::closestPlanet(Vec2 pos)
