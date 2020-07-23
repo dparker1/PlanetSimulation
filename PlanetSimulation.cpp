@@ -83,7 +83,7 @@ void render()
 	{
 		frames++;
 		oldTime = newTime;
-		double step = 1.0 / (diff) * 1000;
+		double step = 1000.0 / (diff);
 		if (frames > 1000)
 		{
 			s.cullPlanets();
@@ -120,10 +120,9 @@ void mouseCallback(int button, int state, int x, int y)
 	if (leftClick && state == GLUT_UP)
 	{
 		leftClick = false;
-		newPlanet.velocity.x = (trueXEnd - trueX) / 50;
-		newPlanet.velocity.y = (trueYEnd - trueY) / 50;
+		newPlanet.velocity.x = (trueXEnd - trueX) / 100;
+		newPlanet.velocity.y = (trueYEnd - trueY) / 100;
 		s.addPlanet(newPlanet);
-		std::cout << "Size: " << newPlanet.size << ", Mass: " << newPlanet.mass << std::endl;
 	}
 
 	if (rightClick && state == GLUT_UP)
@@ -191,7 +190,7 @@ int main(int argc, char** argv)
 	glutInitWindowSize(windowWidth, windowHeight);
 	window = glutCreateWindow("Planet Simulation");
 	s = PlanetSystem();
-	s.addPlanet(10, 10, { 0.15, 0 }, { 0, 0.00025 });
+	s.addPlanet(10, 10, { 0.25, 0 }, { 0, 0.00025 });
 	s.addPlanet(20, 80, { 0, 0 }, true);
 
 	glutKeyboardFunc(keyboardCallback);

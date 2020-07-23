@@ -15,7 +15,7 @@ struct IntDouble
 };
 
 struct Planet {
-    int size{ 10 };
+    double size{ 10 };
     double mass{ 10 };
     Vec2 position;
     Vec2 velocity;
@@ -27,6 +27,7 @@ class PlanetSystem
 {
 public:
     PlanetSystem();
+    PlanetSystem(double collisionThreshold);
     ~PlanetSystem();
     void addPlanet(Planet p);
     void addPlanet(int size, double mass, Vec2 position, Vec2 velocity, Vec2 force, bool fixed);
@@ -41,6 +42,7 @@ public:
     int nPlanets();
 
     std::vector<Planet> planets;
+    double collisionThreshold;
 
 private:
     int n;

@@ -1,6 +1,7 @@
 #include "PlanetSystem.h"
 #include <vector>
 #include <math.h>
+#include <iostream>
 
 double distance(Vec2 p1, Vec2 p2)
 {
@@ -24,6 +25,13 @@ bool isOutside(Planet p)
 PlanetSystem::PlanetSystem()
 {
 	this->n = 0;
+	this->collisionThreshold = 0.01;
+}
+
+PlanetSystem::PlanetSystem(double collisionThreshold)
+{
+	this->n = 0;
+	this->collisionThreshold = collisionThreshold;
 }
 
 PlanetSystem::~PlanetSystem()
@@ -73,7 +81,7 @@ void PlanetSystem::removePlanet(int planetIndex)
 void PlanetSystem::cullPlanets()
 {
 	std::vector<Planet>::iterator it = std::remove_if(this->planets.begin(), this->planets.end(), isOutside);
-	n -= std::distance(it, this->planets.end());
+	this->n -= std::distance(it, this->planets.end());
 	this->planets.erase(it, this->planets.end());
 }
 
@@ -96,20 +104,20 @@ IntDouble PlanetSystem::closestPlanet(Vec2 pos)
 
 void PlanetSystem::calculate(double step)
 {
-	double d, inter;
+	double dist, inter, massMul;
 	for (int i = 0; i < this->n; i++)
 	{
 		Planet* p = &(this->planets[i]);
-		if (p->fixed)
+		if (!p->fixed)
 		{
-			continue;
+			p->position.x += step * p->velocity.x;
+			p->position.y += step * p->velocity.y;
+			p->velocity.x += step * p->force.x;
+			p->velocity.y += step * p->force.y;
+			p->force.x = 0;
+			p->force.y = 0;
 		}
-		p->position.x += step * p->velocity.x;
-		p->position.y += step * p->velocity.y;
-		p->velocity.x += step * p->force.x;
-		p->velocity.y += step * p->force.y;
-		p->force.x = 0;
-		p->force.y = 0;
+
 		for (int j = 0; j < this->n; j++)
 		{
 			if (j == i)
@@ -117,8 +125,20 @@ void PlanetSystem::calculate(double step)
 				continue;
 			}
 			Planet* x = &(this->planets[j]);
-			d = distance(p->position, x->position);
-			inter = (G * x->mass) / (d * d * d);
+			dist = distance(p->position, x->position);
+			//TODO: Change this to reflect radius of planets
+			if(dist <= this->collisionThreshold && !x->fixed) {
+				// Calculate 
+				massMul = p->mass * x->mass;
+				p->mass += x->mass;
+				p->force.x += (massMul / (p->mass) * (x->velocity.x - p->velocity.x)) / (10 * step);
+				p->force.y += (massMul / (p->mass) * (x->velocity.y - p->velocity.y)) / (10 * step);
+
+				// Remove other planet
+				this->planets.erase(this->planets.begin() + j);
+				this->n--;
+			}
+			inter = (G * x->mass) / (dist * dist * dist);
 			p->force.x -= inter * (p->position.x - x->position.x);
 			p->force.y -= inter * (p->position.y - x->position.y);
 		}
